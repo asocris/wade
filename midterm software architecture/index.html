@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>OVI</title>
+    <link rel="stylesheet" href="css/scholarly.min.css">
+    <script src="js/scholarly.min.js"></script>
+  </head>
+  <body prefix="schema: http://schema.org">
+    <header>
+      <div class="banner">
+        <img src="scholarly-html.svg" width="227" height="50" alt="Scholarly HTML logo">
+        <div class="status">Info UAIC 2021</div>
+      </div>
+      <h1>OVI Project</h1>
+    </header>
+    <div role="contentinfo">
+      <dl>
+        <dt>Autori</dt>
+        <dd>
+          Asoltanei Cristian
+        </dd>
+        <dd>
+          Ciubotaru Bogdan
+        </dd>
+    </div>
+
+
+    <section id="Abstract" role="doc-abstract">
+      <h2>Abstract</h2>
+      <p>
+        &emsp;The project consists in a system which exposes an API capable of providing various informations and meta-data reagarding movies and TV shows broadcasted by Netflix. This will be done by querying an RDF store.
+      </p>
+      <p>
+        &emsp;The system will also be able to define friendship relationships between users of a specific social media group. Based on these relationships a user will be able to find out which show were recently watched by his friends.
+      </p>
+      
+    </section>
+
+    <section id="Architecture">
+      <h2>Architecture</h2>
+
+      <section id="architecture-schema">
+        <h3>Architecture schema</h3>
+        <img src="ArchitectureSchema.png" style="width:750px;height:300px;"/>
+        <p>
+          &emsp;The proposed architecture consists in a monolith backend application with several layers: Controller, Service, Repository, Entity(Model). The user will interact with the API which has several endpoints mapped to controllers. Based on the accessed endpoint, the responsible controller will call an assigned service. The service will act as an intermediate layer between the controller and the repository, which will handle data access and populate defined models.
+        </p>
+        <p>
+          &emsp;The RDF store will be responsible for providing data regarding movies, tv shows and user realtionships, which will be returned in an RDF format (turtle, JSON-LD).
+        </p>
+        <p>
+          &emsp;A web scrapper will be used in order to continuously enchance the RDF storage, contributing with knowledge about what movies an user has watched. 
+        </p>
+      </section>
+      <section id="Backend-layers">
+        <h3>Backend layers</h3>
+        <p>
+          &emsp;Initially, we will have three controllers, each responsible for a certain group of functionalities. These are:
+          <ul>
+            <li><b>SparkqlController</b> - handles raw SPARQL queries over the RDF storage in order to provide any kind of linked data the user desires</li>
+            <li><b>MovieController</b> - handles movie related operations, including querying data about a movie based on its name</li>
+            <li><b>UserController</b> - handles user related operations, such as adding a friendship relationship for a specific user or getting a list of linked data about movies watched by user's friends</li>
+          </ul>
+        </p>
+        <p>
+          &emsp;The RDF store will initially be populated with data from the <a href="https://www.kaggle.com/shivamb/netflix-shows">Netflix Movies and TV Shows Dataset</a> based on relationships rules defined bellow. Also, a web scrapper will over social media groups in order to find out which movies the users have recently watched.
+        </p>
+      </section>
+    </section>
+
+    
+    
+    <section id="api-description">
+      <h3>API Description</h3>
+      <img src="api-endpoints.png" style="width:750px;height:450px;"/>
+      <br>
+      
+        <a href="./api-documentation.html" target="_blank">Open api code</a>
+
+    </section>
+
+    <section id="relationships">
+      <h3>Relationships</h3>
+      <p>
+            <pre>
+@base &lt;http://example.org/&gt;.
+@prefix sch: &lt;https://schema.org/&gt;.
+@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-n&gt;.
+@prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt;.
+@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;.
+@prefix xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt;.
+@prefix dbo: &lt;http://dbpedia.org/ontology/&gt;.
+@prefix fb: &lt;https://facebook.com/&gt;.
+
+&lt;#dateAdded&gt; rdf:type rdf:Property; 
+                   rdfs:range xsd:date;
+                   rdfs:domain sch:CreativeWork.
+&lt;#ActorName&gt; rdf:type sch:Person;
+                   foaf:name "ActorName".
+&lt;#DirectorName&gt; rdf:type sch:Person;
+                      sch:name "DirectorName".
+&lt;#CountryName&gt; rdf:type sch:Country;
+                     foaf:name "CountryName".
+&lt;#CountryName&gt; rdf:type sch:Country;
+                     foaf:name "CountryName".
+&lt;#NetflixCategory&gt; rdf:type dbo:Genre;
+                         foaf:name "NetflixCategory".                                             
+&lt;#MovieName&gt; rdf:type sch:Movie;
+                   sch:actor &lt;#ActorName&gt;;
+                   sch:director &lt;#DirectorName&gt;;
+                   sch:countryOfOrigin &lt;#CountryName&gt;;
+                   &lt;#dateAdded&gt; Literal(date);
+                   sch:datePublished Literal(date);
+                   sch:duration Literal(integer);
+                   sch:genre &lt;#NetflixCategory&gt;;
+                   rdfs:comment Literal(string). 
+&lt;#TVSeriesName&gt; rdf:type sch:TVSeries;
+                   sch:actor &lt;#ActorName&gt;;
+                   sch:director &lt;#DirectorName&gt;;
+                   sch:countryOfOrigin &lt;#CountryName&gt;;
+                   &lt;#dateAdded&gt; Literal(date);
+                   sch:datePublished Literal(date);
+                   sch:numberOfSeasons Literal(integer);
+                   sch:genre &lt;#NetflixCategory&gt;;                   
+                   rdfs:comment Literal(string).
+&lt;#watched&gt; rdf:type rdf:Property; 
+                   rdfs:range sch:CreativeWork;
+                   rdfs:domain sch:Person.                    
+fb:User rdf:type sch:Person;
+        foaf:name "Name";
+        foaf:accountName "accountName";
+        foaf:knows fb:User;
+        &lt;#watched&gt; &lt;#TVSeriesName&gt;;
+        &lt;#watched&gt; &lt;#MovieName&gt;.
+            </pre>
+          
+      </p>
+    </section>
+    <section id="Bibliografie">
+      <h3>This document was created using the following:</h3>
+      <p>
+        https://w3c.github.io/scholarly-html/ <br>
+        https://github.com/w3c/scholarly-html
+      </p>
+    </section>
+  </body>
+</html>
