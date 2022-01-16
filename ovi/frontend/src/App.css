@@ -1,0 +1,63 @@
+body {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+#page{
+  width: 100%;
+  min-height: 100vh;
+  background-color: #ffffff;
+  background-image: url("https://www.transparenttextures.com/patterns/cross-scratches.png") !important;
+}
+
+.segment {
+  /*height: 100%;*/
+}
+
+@media only screen and (max-width: 992px) {
+  #notification-bar {
+    display: none;
+  }
+}
+
+#notification-bar {
+width:20%;
+/*background-color: bisque;*/
+}
+
+#page-content {
+  width: 100%;
+  /*background-color: #fafaf7;*/
+  flex-grow: 2;
+  display: flex;
+
+  /*margin-top: 10px;
+  /*border-radius: 5px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  margin-bottom: 10px;*/
+}
+
+.segment:last-child {
+  text-align: center;
+}
+
+
+.ds-box-content-height {
+height: fit-content;
+}
+
+.tal {
+text-align: left;
+}
+
+i:hover {
+  cursor:pointer;
+}
+
+#main-content {
+  padding: 20px;
+}
+
+.my-header {
+  box-shadow: 16px 7px 20px 2px rgb(0 0 0 / 16%), 0 0 0 1px rgb(0 0 0 / 0%);
+}
