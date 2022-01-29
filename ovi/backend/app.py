@@ -6,6 +6,7 @@ import jwt
 import datetime
 from functools import wraps
 from flask_cors import CORS
+import rdf
 
 app = Flask(__name__)
 CORS(app)
@@ -15,12 +16,19 @@ app.config.update(
 )
 db = DBConnection()
 
+
+#
+users = db.get_all_users()
+for user in users:
+    rdf.addUser(user) 
+#
+
 def token_required(f):
     @wraps(f)
     def decorator(*args, **kwargs):
         token = None
-        if 'x-access-tokens' in request.headers:
-            token = request.headers['x-access-tokens']
+        if 'Authorization' in request.headers:
+            token = request.headers['Authorization']
 
         if not token:
             return jsonify({'message': 'a valid token is missing'})
@@ -34,9 +42,14 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
     return decorator
 
-@app.route('/')
-@token_required
-def hello_world(current_user):
+@app.route('/', methods=['POST'])
+def hello_world():
+    content = request.json
+    query = content['query']
+    res = ''
+    for r in rdf.freeSparql(query):
+        res = res + str(r) + "\n"
+    return res
     users = db.get_all_users()
     response = {}
     response['usernames'] = users
@@ -56,3 +69,20 @@ def login():
             return jsonify({'token' : token.decode('UTF-8'), 'username': user['username'], 'fullname': user['fullname']}) 
     else:
         return make_response('Could not verify',  401, {'WWW.Authentication': 'Basic realm: "login required"'})
+
+@app.route('/friends/add', methods=['POST'])
+@token_required
+def add_friend(current_user):
+    content = request.json
+    user_username = current_user['username']
+    friend_username = content['friendUsername']
+    rdf.addFriend(user_username, friend_username)
+
+@app.route('/movies/watched/add', methods=['POST'])
+@token_required
+def add_movie(current_user):
+    content = request.json
+    user_username = current_user['username']
+    movie_name = content['movieName']
+    rdf.addMovie(user_username, movie_name)
+
