@@ -1,7 +1,7 @@
-import logo from './logo.svg';
-import './App.css';
-import { useState, useEffect } from 'react';
 import SparqlPage from './SparqlPage';
+import MoviesPage from './MoviesPage';
+import FriendsPage from './FriendsPage';
+import AboutPage from './AboutPage';
 
 function MainPage({ showLogin,
   setShowLogin,
@@ -10,8 +10,20 @@ function MainPage({ showLogin,
   page }) {
 
   let pageToShow;
-  if(page == 1) {
+  if(page === 1) {
     pageToShow = <SparqlPage auth={auth}/>;
+  }
+
+  if(page === 2) {
+    pageToShow = <MoviesPage auth={auth}/>
+  }
+
+  if(page === 3) {
+    pageToShow = <FriendsPage auth={auth} />
+  }
+
+  if(page === 4) {
+    pageToShow = <AboutPage/>
   }
 
   return (

@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import { useState } from 'react';
 import { login } from './request-utils';
+import { useAlert } from 'react-alert'
 
 function LoginForm({
     auth,
@@ -9,6 +10,7 @@ function LoginForm({
 
     const [username, setUsername] = useState(null);
     const [password, setPassword] = useState(null);
+    const alert = useAlert();
 
 
     const onSubmit = e => {
@@ -21,7 +23,7 @@ function LoginForm({
                 },
                 token: data.token
             }))
-            .catch(e => console.log(e.message));
+            .catch(e => alert.error("Login unsuccessful."));
     }
 
     return (
