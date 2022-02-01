@@ -7,6 +7,10 @@ import datetime
 from functools import wraps
 from flask_cors import CORS
 import rdf
+from pprint import pprint
+from rdflib.plugins.sparql.results.txtresults  import TXTResultSerializer
+import json
+import io
 
 app = Flask(__name__)
 CORS(app)
@@ -22,6 +26,13 @@ users = db.get_all_users()
 for user in users:
     rdf.addUser(user) 
 #
+
+def print_result_set(rs):
+    res = ''
+    #stream = io.StringIO("")
+    for r in rs:
+        res = res + str(r) + "\n"#TXTResultSerializer(rs).serialize(stream, 'utf-8') + "\n"
+    return res
 
 def token_required(f):
     @wraps(f)
@@ -77,6 +88,7 @@ def add_friend(current_user):
     user_username = current_user['username']
     friend_username = content['friendUsername']
     rdf.addFriend(user_username, friend_username)
+    return ('', 201)
 
 @app.route('/movies/watched/add', methods=['POST'])
 @token_required
@@ -85,4 +97,25 @@ def add_movie(current_user):
     user_username = current_user['username']
     movie_name = content['movieName']
     rdf.addMovie(user_username, movie_name)
+    return ('', 201)
+
+
+@app.route('/movies', methods=['GET'])
+def search_movie():
+    args = request.args
+    movieName = args.get("name")
+    result = rdf.getMovie(movieName)
+    return print_result_set(result)
+
+@app.route('/friends/watched', methods=['GET'])
+@token_required
+def get_watched_by_friends(current_user):
+    user_username = current_user['username']
+    
+    result = rdf.getWatchedByFriends(user_username)
+    return print_result_set(result)
+
+
+
+
 
