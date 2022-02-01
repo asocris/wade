@@ -1,1 +1,171 @@
-empty
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>OVI</title>
+    <link rel="stylesheet" href="css/scholarly.min.css">
+    <script src="js/scholarly.min.js"></script>
+  </head>
+  <body prefix="schema: http://schema.org">
+    <header>
+      <div class="banner">
+        <img src="scholarly-html.svg" width="227" height="50" alt="Scholarly HTML logo">
+        <div class="status">Info UAIC 2021</div>
+      </div>
+      <h1>OVI Project</h1>
+    </header>
+    <div role="contentinfo">
+      <dl>
+        <dt>Autori</dt>
+        <dd>
+          Asoltanei Cristian
+        </dd>
+        <dd>
+          Ciubotaru Bogdan
+        </dd>
+    </div>
+
+
+    <section id="Abstract" role="doc-abstract">
+      <h2>Abstract</h2>
+      <p>
+        &emsp;The project consists in a system which exposes an API capable of providing various informations and meta-data regarding movies and TV shows broadcasted by Netflix.
+      </p>
+      <p>
+        &emsp;A user will also be able to define friendship relationships between himself and other users through a follow mechanism. Based on these relationships a user will be able to find out which shows and movies  were watched by his friends.
+      </p>
+      <p>
+        &emsp;This will be done by querying an RDF graph.
+      </p>
+      
+    </section>
+
+    <section id="Architecture">
+      <h2>Architecture</h2>
+
+      <section id="architecture-schema">
+        <h3>Architecture schema</h3>
+        <img src="ArchitectureSchema.png" style="width:750px;height:300px;"/>
+        <p>
+          &emsp;The proposed architecture consists in a monolith backend application with several layers: Controller, Service, Repository, Entity(Model). A frontend application will interact with the backend API which has several endpoints mapped to controllers. Based on the accessed endpoint, the responsible controller will call an assigned service. The service will act as an intermediate layer between the controller and the repository, which will handle data access and populate defined models.
+        </p>
+        <p>
+          &emsp;The RDF store will be responsible for providing data regarding movies, tv shows and user realtionships, which will be returned in an RDF format.
+        </p>
+        <p>
+          &emsp;
+        </p>
+      </section>
+      <section id="Backend-layers">
+        <h3>Backend layers</h3>
+        <p>
+          &emsp;Initially, we will have three controllers, each responsible for a certain group of functionalities. These are:
+          <ul>
+            <li><b>SparqlController</b> - handles raw SPARQL queries over the RDF storage in order to provide any kind of linked data the user desires</li>
+            <li><b>MovieController</b> - handles movie related operations, including querying data about a movie based on its name and adding a movie to watched movies list.</li>
+            <li><b>UserController</b> - handles user related operations, such as adding a friendship relationship for a specific user or getting a list of linked data about movies watched by user's friends</li>
+          </ul>
+        </p>
+        <p>
+          &emsp;The RDF store will initially be populated with data from the <a href="https://www.kaggle.com/shivamb/netflix-shows">Netflix Movies and TV Shows Dataset</a> based on relationships rules defined bellow. Also, the user input will add data to the graph, with information like which movies the users have recently watched.
+        </p>
+      </section>
+      <section id="Frontend-application">
+        <h3>Frontend application</h3>
+        <p>
+          &emsp;The user will be able to access RDF data through an UI built with ReactJS. The functionalities accessible through the interface are limited to the authentication state of the user, meaning that an unauthenticated user will only be able to use the general sparql query functionality and to search the information regarding a certain movie, while an authenticated user will have full access to application's functionalities like following a friend or adding a movie to his watchlist. 
+        </p>
+        <p>
+          &emsp;The authentication process consists in sending a username-password combination to a login endpoint and receiving back an authentication token which will be sent alongside every requests that would need authentication untill the user logs out. 
+        </p>
+        <img src="interface.png" style="width:800px;height:420px;"/>
+        <br>
+      </section>
+      <section id="parsing">
+        <h3>RDF Data Processing</h3>
+        <p>
+          &emsp;Our initial data source consisted in a CSV file about Netflix shows, each row coresponding to a creative work. The structure would be [show_id, type, title, director, cast, country, date_added, release_year, rating, duration, listed_in, description]. It's worth noting that some of the fields such as cast, director or even country could be in a list format, containing multiple records. The goal was to create a valid RDF Turtle schema from all this data. Once we had the schema, it would be loaded as a graph when starting the backend API. It was important to already have the RDF schema when loading up the API, because the parsing of CSV took a lot of time.  
+        </p>
+        <p>
+          &emsp; In order to do this, we had to create our own script that required lots of text parsing. While the bigger ideea is quite simple, keep appending to a huge string that will be printed in a file, it required a lot of attention to detail. 
+        </p>
+        <p>
+          &emsp; First of all, we started by defining all entities a creative work would have, then defining the specific movie or TV show. We had to get rid of some characters which were quite problematic when we parsed the string with RDFLib, such as " or ":" for URIs. We also had to make sure we do not define something twice, like a director or a category. For dates ( on sch:datePublished and sch:dateCreated ) we used xsd:dateTime.
+        </p>
+        <p>
+          &emsp; To have a better understanding of our approach, we put below the main method for defining a creative work. This method receives some particular data as literals (such as movie name or description)  and RDF lists of uris for various things, such as actor list or genres_list.   
+        </p>
+        <img src="code.png" style="width:800px;height:450px;"/>
+        <br>
+      </section>
+
+    </section>
+
+    
+    
+    <section id="api-description">
+      <h3>API Description</h3>
+      <img src="api-endpoints.png" style="width:750px;height:450px;"/>
+      <br>
+      
+        <a href="./api-documentation.html" target="_blank">Open API page</a>
+
+    </section>
+
+    <section id="relationships">
+      <h3>Sample of relationships</h3>
+      <p>
+            <pre>
+@base &lt;http://example.org/&gt;.
+@prefix sch: &lt;https://schema.org/&gt;.
+@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;.
+@prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt;.
+@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;.
+@prefix xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt;.
+@prefix dbo: &lt;http://dbpedia.org/ontology/&gt;.
+
+&lt;watched&gt; rdf:type rdf:Property.
+
+&lt;people/KofiGhanaba&gt; rdf:type sch:Person;
+                      foaf:name "Kofi Ghanaba".
+
+&lt;countries/Ghana&gt; rdf:type sch:Country;
+                      foaf:name "Ghana".
+
+&lt;categories/Dramas&gt; rdf:type dbo:Genre;
+                      foaf:name "Dramas".
+
+&lt;mediaCreations/Sankofa&gt; rdf:type sch:Movie;
+                   sch:name "Sankofa";
+                   sch:actor ( &lt;people/KofiGhanaba&gt; &lt;people/OyafunmikeOgunlano&gt; &lt;people/AlexandraDuah&gt; &lt;people/NickMedley&gt; &lt;people/Mutabaruka&gt; &lt;people/AfemoOmilami&gt; &lt;people/ReggieCarter&gt; &lt;people/Mzuri&gt;  );
+                   sch:director ( &lt;people/HaileGerima&gt;  );
+                   sch:countryOfOrigin ( &lt;countries/UnitedStates&gt; &lt;countries/Ghana&gt; &lt;countries/BurkinaFaso&gt; &lt;countries/UnitedKingdom&gt; &lt;countries/Germany&gt; &lt;countries/Ethiopia&gt;  );
+                   sch:datePublished "2021-9-24T00:00:0+01:00"^^xsd:dateTime;
+                   sch:dateCreated "1993-01-01T00:00:00+01:00"^^xsd:dateTime;
+                   sch:duration 125;
+                   sch:genre ( &lt;categories/Dramas&gt; &lt;categories/IndependentMovies&gt; &lt;categories/InternationalMovies&gt;  );
+                   rdfs:comment  "On a photo shoot in Ghana, an American model slips back in time, becomes enslaved on a plantation and bears witness to the agony of her ancestral past.".
+
+&lt;/users/bciubotaru&gt; rdf:type foaf:Person;
+		    foaf:name "Bogdan Ciubotaru".
+
+&lt;/users/bciubotaru&gt; &lt;watched&gt; &lt;mediaCreations/Sankofa&gt;.
+
+&lt;/users/bciubotaru&gt; foaf:follows &lt;/users/casoltanei&gt;.
+            </pre>
+          
+      </p>
+    </section>
+    <section id="Demo">
+      <p><a href="https://youtu.be/wFbhLs104l4" target="_blank">Demo video</a></p>
+    </section>
+    <section id="Bibliografie">
+      <h3>This document was created using the following:</h3>
+      <p>
+        https://w3c.github.io/scholarly-html/ <br>
+        https://github.com/w3c/scholarly-html
+      </p>
+    </section>
+  </body>
+</html>
